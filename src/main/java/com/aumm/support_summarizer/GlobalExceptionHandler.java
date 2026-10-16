@@ -7,6 +7,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.ai.retry.NonTransientAiException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import java.util.Map;
 
 @RestControllerAdvice
@@ -30,5 +33,18 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(NonTransientAiException.class)
+    public ResponseEntity<Map<String, Object>> handleAiErrors(
+            NonTransientAiException ex) {
+
+        Map<String, Object> body = Map.of(
+                "status", 502,
+                "error", "AI Service Error",
+                "message", "The AI service could not process your request."
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(body);
     }
 }
